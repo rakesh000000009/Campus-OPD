@@ -1,0 +1,13 @@
+{
+  "name": "campus-opd",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Campus OPD - Campus Doctor Appointment and Queue Management System",
+  "scripts": {
+    "start": "node backend/server.js",
+    "seed": "node backend/seed/seed.js",
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build"
+  }
+}
