@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { getSocket } from '../services/socket';
 import StatusBadge from '../components/StatusBadge';
 import { 
   Users, 
@@ -93,9 +94,20 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (selectedDoctorId) {
       fetchQueue(selectedDoctorId);
+      const socket = getSocket();
+      const handleQueueUpdate = (data) => {
+        if (selectedDoctorId && data.doctor?.id?.toString() === selectedDoctorId.toString()) {
+          setQueueData(data);
+        }
+      };
+      socket.on('queue_update', handleQueueUpdate);
+      socket.on('global_queue_update', handleQueueUpdate);
+
       const interval = setInterval(() => fetchQueue(selectedDoctorId), 4000);
 
       return () => {
+        socket.off('queue_update', handleQueueUpdate);
+        socket.off('global_queue_update', handleQueueUpdate);
         clearInterval(interval);
       };
     }
