@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { getSocket } from '../services/socket';
 import StatusBadge from '../components/StatusBadge';
 import { 
   Activity, 
@@ -99,33 +98,10 @@ export default function Queue() {
     if (selectedDoctorId) {
       fetchQueue();
 
-      // Socket.IO real-time listener
-      const socket = getSocket();
-      const handleQueueUpdate = (data) => {
-        if (data.doctor?.id?.toString() === selectedDoctorId.toString()) {
-          setQueueData(data);
-          if (userAppointmentId) {
-            // Refresh patient's own peopleAhead
-            api.get(`/appointments/${userAppointmentId}`)
-              .then((res) => {
-                setUserAppointment(res.data);
-                setPeopleAhead(res.data.peopleAhead);
-              })
-              .catch(() => {});
-          }
-          setLastRefreshed(new Date());
-        }
-      };
-
-      socket.on('queue_update', handleQueueUpdate);
-      socket.on('global_queue_update', handleQueueUpdate);
-
-      // Reliable 3-second polling interval fallback
+      // Reliable 3-second polling interval (real-time updates without websockets)
       const interval = setInterval(fetchQueue, 3000);
 
       return () => {
-        socket.off('queue_update', handleQueueUpdate);
-        socket.off('global_queue_update', handleQueueUpdate);
         clearInterval(interval);
       };
     }

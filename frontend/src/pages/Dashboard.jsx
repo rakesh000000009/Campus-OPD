@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { getSocket } from '../services/socket';
 import StatusBadge from '../components/StatusBadge';
 import DoctorDashboard from './DoctorDashboard';
 import AdminDashboard from './AdminDashboard';
@@ -64,20 +63,10 @@ function StudentDashboard() {
   useEffect(() => {
     fetchStudentData();
 
-    const socket = getSocket();
-    const handleUpdate = () => {
-      fetchStudentData();
-    };
-
-    socket.on('queue_update', handleUpdate);
-    socket.on('global_queue_update', handleUpdate);
-
-    // Reliable 4-second polling fallback
+    // Reliable 4-second polling (real-time updates without websockets)
     const interval = setInterval(fetchStudentData, 4000);
 
     return () => {
-      socket.off('queue_update', handleUpdate);
-      socket.off('global_queue_update', handleUpdate);
       clearInterval(interval);
     };
   }, []);

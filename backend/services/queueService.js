@@ -1,7 +1,6 @@
 const db = require('../config/db');
 const DoctorModel = require('../models/doctorModel');
 const AppointmentModel = require('../models/appointmentModel');
-const socketService = require('./socketService');
 
 class QueueService {
   /**
@@ -124,8 +123,6 @@ class QueueService {
     }
 
     const updatedQueue = await this.getDoctorQueue(doctorId, date);
-    socketService.emitQueueUpdate(doctorId, updatedQueue);
-
     return {
       message: nextAppt ? `Queue advanced to token ${nextAppt.token_number}` : 'No more waiting patients.',
       queue: updatedQueue
@@ -144,8 +141,6 @@ class QueueService {
     // Also notify queue
     const full = await AppointmentModel.findById(appointmentId);
     const queueData = await this.getDoctorQueue(full.doctor_id, full.date);
-    socketService.emitQueueUpdate(full.doctor_id, queueData);
-    socketService.emitAppointmentUpdate(full);
 
     return full;
   }
