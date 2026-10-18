@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
-import { getSocket } from '../services/socket';
 import StatusBadge from '../components/StatusBadge';
 import { 
   Stethoscope, 
@@ -48,20 +47,10 @@ export default function DoctorDashboard() {
   useEffect(() => {
     fetchDoctorAppointments();
 
-    const socket = getSocket();
-    const handleUpdate = () => {
-      fetchDoctorAppointments();
-    };
-
-    socket.on('queue_update', handleUpdate);
-    socket.on('global_queue_update', handleUpdate);
-
-    // Auto-refresh interval fallback
+    // Auto-refresh interval (real-time updates without websockets)
     const interval = setInterval(fetchDoctorAppointments, 5000);
 
     return () => {
-      socket.off('queue_update', handleUpdate);
-      socket.off('global_queue_update', handleUpdate);
       clearInterval(interval);
     };
   }, [selectedDate]);
