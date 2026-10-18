@@ -27,6 +27,21 @@ app.use('/api/queue', queueRoutes);
 app.use('/api/doctor', doctorDashboardRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Serve frontend static assets if built
+const fs = require('fs');
+const path = require('path');
+const frontendDist = path.join(__dirname, '../frontend/dist');
+
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
+
 // 404 handler for unmatched API routes
 app.use((req, res) => {
   res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });

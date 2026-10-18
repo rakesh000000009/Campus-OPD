@@ -20,6 +20,3 @@ yarn-error.log*
 .vscode/
 .idea/
 *.swp
-
-# Local Netlify folder
-.netlify

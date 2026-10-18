@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { getSocket } from '../services/socket';
 import StatusBadge from '../components/StatusBadge';
 import DoctorDashboard from './DoctorDashboard';
 import AdminDashboard from './AdminDashboard';
@@ -22,7 +23,9 @@ import {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
+  // If user is DOCTOR or ADMIN, render their respective dashboards
   if (user?.role === 'DOCTOR') {
     return <DoctorDashboard />;
   }
@@ -30,14 +33,7 @@ export default function Dashboard() {
     return <AdminDashboard />;
   }
 
-  // Otherwise render the Student Dashboard (hooks live inside, keeping Rules-of-Hooks safe)
-  return <StudentDashboard />;
-}
-
-function StudentDashboard() {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
+  // Otherwise STUDENT Dashboard
   const [upcoming, setUpcoming] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -63,10 +59,20 @@ function StudentDashboard() {
   useEffect(() => {
     fetchStudentData();
 
-    // Reliable 4-second polling (real-time updates without websockets)
+    const socket = getSocket();
+    const handleUpdate = () => {
+      fetchStudentData();
+    };
+
+    socket.on('queue_update', handleUpdate);
+    socket.on('global_queue_update', handleUpdate);
+
+    // Reliable 4-second polling fallback
     const interval = setInterval(fetchStudentData, 4000);
 
     return () => {
+      socket.off('queue_update', handleUpdate);
+      socket.off('global_queue_update', handleUpdate);
       clearInterval(interval);
     };
   }, []);
