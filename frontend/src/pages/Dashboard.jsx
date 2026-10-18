@@ -23,9 +23,7 @@ import {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const navigate = useNavigate();
 
-  // If user is DOCTOR or ADMIN, render their respective dashboards
   if (user?.role === 'DOCTOR') {
     return <DoctorDashboard />;
   }
@@ -33,7 +31,14 @@ export default function Dashboard() {
     return <AdminDashboard />;
   }
 
-  // Otherwise STUDENT Dashboard
+  // Otherwise render the Student Dashboard (hooks live inside, keeping Rules-of-Hooks safe)
+  return <StudentDashboard />;
+}
+
+function StudentDashboard() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [upcoming, setUpcoming] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
